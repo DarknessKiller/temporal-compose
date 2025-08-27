@@ -5,6 +5,8 @@ log:
 persistence:
     numHistoryShards: {{ default .Env.NUM_HISTORY_SHARDS "4" }}
     defaultStore: default
+    visibilityStore: visibility
+    datastores:
         default:
             sql:
                 pluginName: "postgres12"
