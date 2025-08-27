@@ -5,6 +5,9 @@ log:
 persistence:
     numHistoryShards: {{ default .Env.NUM_HISTORY_SHARDS "4" }}
     defaultStore: default
+    visibilityStore: visibility
+    secondaryVisibilityStore: es-visibility
+    datastores:
         default:
             sql:
                 pluginName: "postgres12"
@@ -37,29 +40,6 @@ persistence:
                 indices:
                     visibility: {{ default .Env.ES_VIS_INDEX "temporal-visibility-dev" }}
 global:
-    membership:
-        maxJoinDuration: 30s
-        broadcastAddress: {{ default .Env.TEMPORAL_BROADCAST_ADDRESS "" }}
-    tls:
-        internode:
-            server:
-                requireClientAuth: false
-            client:
-        frontend:
-            server:
-                requireClientAuth: false
-    {{- if .Env.STATSD_ENDPOINT }}
-    metrics:
-        statsd:
-            hostPort: {{ .Env.STATSD_ENDPOINT }}
-            prefix: "temporal"
-    {{- else if .Env.PROMETHEUS_ENDPOINT }}
-    metrics:
-        prometheus:
-            timerType: {{ default .Env.PROMETHEUS_TIMER_TYPE "histogram" }}
-            listenAddress: {{ .Env.PROMETHEUS_ENDPOINT }}
-    {{- end }}
-
 {{- $temporalGrpcPort := default .Env.FRONTEND_GRPC_PORT "7233" }}
 services:
     frontend:
@@ -103,52 +83,6 @@ clusterMetadata:
             initialFailoverVersion: 1
             rpcName: "frontend"
             rpcAddress: {{ (print "127.0.0.1:" $temporalGrpcPort) }}
-
-dcRedirectionPolicy:
-    policy: "noop"
-    toDC: ""
-
-archival:
-  history:
-    state: "enabled"
-    enableRead: true
-    provider:
-      filestore:
-        fileMode: "0666"
-        dirMode: "0766"
-  visibility:
-    state: "enabled"
-    enableRead: true
-    provider:
-      filestore:
-        fileMode: "0666"
-        dirMode: "0766"
-
-namespaceDefaults:
-  archival:
-    history:
-      state: "disabled"
-      URI: "file:///tmp/temporal_archival/development"
-    visibility:
-      state: "disabled"
-      URI: "file:///tmp/temporal_vis_archival/development"
-
-kafka:
-    tls:
-        enabled: false
-    clusters:
-        test:
-            brokers:
-                - {{ default .Env.KAFKA_SEEDS "" }}:9092
-    topics:
-        temporal-visibility-dev:
-            cluster: test
-        temporal-visibility-dev-dlq:
-            cluster: test
-    applications:
-        visibility:
-            topic: temporal-visibility-dev
-            dlq-topic: temporal-visibility-dev-dlq
 
 dynamicConfigClient:
     filepath: {{ default .Env.DYNAMIC_CONFIG_FILE_PATH "/etc/temporal/config/dynamicconfig" }}
