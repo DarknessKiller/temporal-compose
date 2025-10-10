@@ -37,6 +37,8 @@ services:
     environment:
       - SERVICES=frontend:matching:history:worker:internal-frontend
       - ENABLE_ES=true
+      - ES_SEEDS=elasticsearch
+      - ES_VERSION=v7
       - DB=postgres12
       - DB_PORT=5432
       - POSTGRES_USER=temporal
