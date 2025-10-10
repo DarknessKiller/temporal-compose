@@ -1,6 +1,7 @@
 services:
   postgresql:
     container_name: temporal-postgresql
+    restart: always
     environment:
       POSTGRES_PASSWORD: temporal
       POSTGRES_USER: temporal
@@ -14,6 +15,7 @@ services:
   
   temporal:
     container_name: temporal
+    restart: always
     depends_on:
       - postgresql
     environment:
@@ -39,6 +41,7 @@ services:
   
   temporal-admin-tools:
     container_name: temporal-admin-tools
+    restart: always
     depends_on:
       - temporal
     environment:
@@ -53,6 +56,7 @@ services:
 
   temporal-ui:
     container_name: temporal-ui
+    restart: always
     depends_on:
       - temporal
     environment:
